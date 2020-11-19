@@ -1,0 +1,7 @@
+{
+  "name": "quizMobile",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

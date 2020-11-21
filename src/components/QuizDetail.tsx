@@ -20,6 +20,18 @@ interface Question {
     question_value: string
 }
 
+
+interface GameProps {
+    quiz: Quiz,
+    endQuiz: Function
+}
+
+interface Answer {
+    id: number,
+    value: string,
+    correct: true,
+    question: number
+}
 interface Props {
     questions: Question[]
 }
@@ -31,7 +43,6 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
     
     useEffect(() => {
         api.getQuiz(id).then(res => {
-            console.log(res.data)
             setQuiz(res.data)
         })
     }, [id, setQuiz])
@@ -93,17 +104,6 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
 
 }
 
-interface GameProps {
-    quiz: Quiz,
-    endQuiz: Function
-}
-
-interface Answer {
-    id: number,
-    value: string,
-    correct: true,
-    question: number
-}
 
 function shuffle(array: Question[]) {
     var currentIndex = array.length, temporaryValue, randomIndex;

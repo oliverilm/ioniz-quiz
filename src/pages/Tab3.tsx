@@ -11,10 +11,16 @@ interface Quiz {
 }
 
 const Tab3: React.FC = () => {
-
   const [disabled, setDisabled] = useState<boolean>(false)
   const [name, setName] = useState("")
   const [createdQuiz, setCreatedQuiz] = useState<Quiz>()
+
+  const submit = () => {
+    api.createQuiz(name).then(res => {
+      setCreatedQuiz(res.data)
+      setDisabled(true)
+    })
+  }
 
   return (
     <IonPage>
@@ -27,21 +33,26 @@ const Tab3: React.FC = () => {
         <div style={{margin: 10}}>
         <IonItem>
             <IonLabel position="stacked">Quiz name</IonLabel>
-            <IonInput disabled={disabled} value={name} placeholder="Quiz Name" onIonInput={(e) => {setName((e.target as HTMLTextAreaElement).value)}}> </IonInput>
+            <IonInput 
+              disabled={disabled} 
+              value={name} 
+              placeholder="Quiz Name" 
+              onIonInput={(e) => {setName((e.target as HTMLTextAreaElement).value)}} />
           </IonItem>
           {name.length > 0 && !disabled ? (
-              <IonButton expand="block" fill="solid" onClick={() => {
-                api.createQuiz(name).then(res => {
-                  setCreatedQuiz(res.data)
-                  setDisabled(true)
-                })
-              }}>Create</IonButton>
+
+              <IonButton 
+                expand="block" 
+                fill="solid" 
+                onClick={submit}>
+                  Create
+              </IonButton>
+
             ) : <></>}
 
             {createdQuiz ? (
               <div><QuizQuestionForm quiz={createdQuiz}/></div>
             ) : <></>}
-            {/* <div><QuizQuestionForm quiz={{id: 1, name: "test", questions:[], show: true}}/></div> */}
           </div>
       </IonContent>
     </IonPage>
@@ -86,12 +97,11 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
     if (ans) {
       if (value) {
         ans.value = value
+        result.push(ans)
       }
-      result.push(ans)
     }
 
     const current = currentAnswers.map(obj => result.find(o => o.id === obj.id) || obj);
-
     setCurrentAnswers(current)
   }
 
@@ -157,8 +167,6 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
       console.log(errors)
     }
   }
-
-
 
   return (
     <IonCard>

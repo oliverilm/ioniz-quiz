@@ -131,7 +131,7 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
     const errors = []
     const hasCorrect = currentAnswers.filter(ans => ans.correct).length > 0
     const hasAnswers = currentAnswers.length > 0
-    const noEmptyValues = currentAnswers.filter(ans => ans.value !== "").length === 0
+    // const noEmptyValues = currentAnswers.filter(ans => ans.value !== "").length === 0
 
     if (!hasCorrect) {
       errors.push("No 'correct' answere marked!")
@@ -139,9 +139,9 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
     if (!hasAnswers) {
       errors.push("You must include atleast one answer!")
     }
-    if (!noEmptyValues) {
-      errors.push("All answers must contain content!")
-    }
+    // if (!noEmptyValues) {
+    //   errors.push("All answers must contain content!")
+    // }
     return errors
   }
 
@@ -175,7 +175,7 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
             <IonCardSubtitle>Question</IonCardSubtitle>
             <IonInput 
               value={question} 
-              placeholder="Quiz Name" 
+              placeholder="Question" 
               onIonInput={(e) => {setQuestion((e.target as HTMLTextAreaElement).value)}}
               style={{ fontSize: "20px", fontWeight: "bolder"}}
               />         

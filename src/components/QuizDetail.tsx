@@ -23,7 +23,8 @@ interface Question {
 
 interface GameProps {
     quiz: Quiz,
-    endQuiz: Function
+    endQuiz: Function,
+    onAnswer: Function,
 }
 
 interface Answer {
@@ -40,6 +41,7 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
     const [quiz, setQuiz] = useState<Quiz>()
     const { id } = match.params;
     const [quizStarted, setQuizStarted] = useState<boolean>(false)
+    const [answered, setAnswered] = useState<Answer[]>([])
     
     useEffect(() => {
         api.getQuiz(id).then(res => {
@@ -47,8 +49,9 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
         })
     }, [id, setQuiz])
 
-    const endQuiz = () => {
+    const endQuiz = (answers: Answer[]) => {
         // send data to the backend to create a session and stats
+        api.addStatistics(quiz?.id, answers).then(res => console.log(res))
         setQuizStarted(!quizStarted)
     }
 
@@ -63,7 +66,7 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                     </div>
                     {quizStarted ? (
                         <div>
-                        <IonButton expand="block" fill="solid" onClick={() => {setQuizStarted(!quizStarted)}} >End quiz</IonButton>
+                        <IonButton expand="block" fill="solid" onClick={() => {endQuiz(answered)}} >End quiz</IonButton>
                     </div>
                     ) : (
                         <div>
@@ -94,7 +97,11 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                     ) : (
                         <Game 
                             quiz={quiz} 
-                            endQuiz={endQuiz}/>
+                            endQuiz={endQuiz}
+                            onAnswer={(answer: Answer)=>{
+                                setAnswered(a => [...a, answer])
+                            }}/>
+                            
                     )}
                 </>
             ) : <></>}
@@ -125,7 +132,7 @@ function shuffle(array: any[]) {
     return array;
 }
 
-const Game: React.FC<GameProps> = ({ quiz, endQuiz }) => {
+const Game: React.FC<GameProps> = ({ quiz, endQuiz, onAnswer }) => {
     const [answered, setAnswered] = useState<Answer[]>([])
     const [shuffeledQuestions, setShuffeledQuestions] = useState<Question[]>(shuffle(quiz.questions))
 
@@ -137,6 +144,7 @@ const Game: React.FC<GameProps> = ({ quiz, endQuiz }) => {
     }
 
     const answerQuestion = (ans: Answer) => {
+        onAnswer(ans)
         setAnswered([...answered, ans])
     }
 
@@ -146,7 +154,7 @@ const Game: React.FC<GameProps> = ({ quiz, endQuiz }) => {
             return <GameQuestion question={question} onAnswer={answerQuestion} />
         }
         else {
-            endQuiz()
+            endQuiz(answered)
         }
 
     }

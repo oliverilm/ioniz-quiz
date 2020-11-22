@@ -22,5 +22,6 @@ export interface Answer {
     id: number,
     value: string,
     correct: boolean,
-    question?: number
+    question?: number,
+    answer_correct?: boolean
 }

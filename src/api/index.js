@@ -17,6 +17,7 @@ export default {
     createQuiz: (name) => postRequest("quiz-list-create", { name }),
     deleteQuiz: (id) => postRequest("delete-quiz", { id }),
 
+    getStats: () => getRequest("get-stats"),
     getQuiz: (pk) => getRequest(`quiz-detail/${pk}`),
     createQuestion: (id, question, answers) => postRequest(`add-answer`, { quizId: id, value: question, answers }),
     addStatistics: (quizId, answers) => postRequest("add-stat", {quizId, answers})

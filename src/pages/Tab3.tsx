@@ -154,7 +154,7 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
         // clear all fields
         setCounter(0)
         setCurrentAnswers([
-          {id: counter, value: "", correct: false}
+          {id: counter + 1, value: "", correct: false}
         ])
         setShowAlert(false)
         setQuestion("")

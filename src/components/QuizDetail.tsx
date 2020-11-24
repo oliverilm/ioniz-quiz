@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react"
-import { settingsOutline} from "ionicons/icons"
+import { settingsOutline, createOutline, trashBinOutline, shareOutline, share} from "ionicons/icons"
 import api from "../api";
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton } from '@ionic/react';
+import { IonList, IonItem, IonLabel, IonContent, IonHeader, IonPopover, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton } from '@ionic/react';
 
 
 interface RouteInfo { match: {params: {id: string} }}
@@ -37,12 +37,45 @@ interface Props {
     questions: Question[]
 }
 
+const QuizSettings: React.FC = () => {
+    const [showPopover, setShowPopover] = useState(false);
+
+    return (
+        <>
+        <IonTabButton>
+            <IonIcon icon={settingsOutline} onClick={() => {setShowPopover(true)}} />
+        </IonTabButton>
+
+        <IonPopover
+            isOpen={showPopover}
+            cssClass='my-custom-class'
+            animated={true}
+            onDidDismiss={e => setShowPopover(false)}>
+            <IonList>
+                <IonItem>
+                    <IonIcon style={{marginRight: ".5em"}} icon={createOutline}/>
+                    <IonLabel>Edit quiz</IonLabel>
+                </IonItem>
+                <IonItem>
+                    <IonIcon style={{marginRight: ".5em"}} icon={shareOutline}/>
+                    <IonLabel>Share</IonLabel>
+                </IonItem>
+                <IonItem>
+                    <IonIcon style={{marginRight: ".5em"}} icon={trashBinOutline}/>
+                    <IonLabel>Delete this quiz</IonLabel>
+                </IonItem>
+            </IonList>
+        </IonPopover>
+        </>
+    )
+}
+
 const QuizDetail: React.FC<RouteInfo> = ({match}) => {
     const [quiz, setQuiz] = useState<Quiz>()
     const { id } = match.params;
     const [quizStarted, setQuizStarted] = useState<boolean>(false)
     const [answered, setAnswered] = useState<Answer[]>([])
-    
+
     useEffect(() => {
         api.getQuiz(id).then(res => {
             setQuiz(res.data)
@@ -70,9 +103,7 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                     </div>
                     ) : (
                         <div>
-                            <IonTabButton href={`/settings/${id}`}>
-                                <IonIcon icon={settingsOutline} />
-                            </IonTabButton>
+                            <QuizSettings />
                         </div>
                     )}
                     

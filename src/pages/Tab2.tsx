@@ -1,6 +1,5 @@
 import React, {useState, useEffect} from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import './Tab2.css';
 import { Answer } from '../utils/interface';
 import api from '../api';
 import Chart from "react-google-charts";
@@ -57,11 +56,13 @@ const Tab2: React.FC = () => {
           data={[
             ['Time', 'Correct', 'Incorrect', { role: 'style' }],
             ...quizData.map(session => {
-
+            const correct = session.questions_answered
+                .filter(ans => ans.answer_correct).length
+            
             return [
               new Date(session.datetime).toDateString(),
-              session.questions_answered.filter(ans => ans.answer_correct).length,
-              session.total_questions,
+              correct,
+              session.total_questions - correct,
               'color: #e5e4e2'
             ]
           })]}

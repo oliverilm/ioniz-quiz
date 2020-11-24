@@ -25,11 +25,12 @@ const CreateAnswersList: React.FC<Props> = ({currentAnswers, setPending, setShow
                 <IonInput 
                   value={answer.value} 
                   placeholder="Answer option"
+                  type="text"
                   onIonChange={e => {onAnswerChange(answer.id, e.detail.value || "")}}></IonInput>
                 <IonCheckbox 
                   slot="end" 
                   color="primary" 
-                  
+                  checked={answer.correct}
                   onIonChange={(e) => {
                     onCheck(answer.id)
                   }}/>

@@ -26,7 +26,23 @@ const Tab3: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Create a new quiz</IonTitle>
+          <IonTitle>
+            <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <div>Create a new quiz</div>
+              <div>
+                {createdQuiz ? (
+                <IonButton
+                  size="small"
+                  color="warning"
+                  href={`/tab1/${createdQuiz.id}`}>
+                  Finish  
+                </IonButton>
+                ) : <></>}
+              </div>
+            </div>
+
+
+          </IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
@@ -67,13 +83,6 @@ interface Quiz {
     questions: []
 }
 
-interface Question {
-    id: number,
-    answers: Answer[]
-    quiz: number
-    question_value: string
-}
-
 interface Answer {
     id: number,
     value: string,
@@ -96,7 +105,8 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
     const ans = currentAnswers.find(answer => answer.id === index)
     if (ans) {
       if (value) {
-        ans.value = value
+        console.log(value)
+        ans.value = value || ""
         result.push(ans)
       }
     }
@@ -145,22 +155,18 @@ const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
     return errors
   }
 
-  const submit = () => {
+  const submit = async () => {
     const errors = getErrors()
     if (errors.length === 0) {
       api.createQuestion(quiz.id, question, currentAnswers).then(res => {
-        console.log(res)
-
         // clear all fields
-        setCounter(0)
-        setCurrentAnswers([
-          {id: counter + 1, value: "", correct: false}
-        ])
+        const nextNumber = counter + 1
+        setCounter(nextNumber)
+        setCurrentAnswers([])
         setShowAlert(false)
         setQuestion("")
         setPending(0)
         setShowSubmitAlert(false)
-      
       })
     } else {
       // display errors

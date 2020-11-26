@@ -1,80 +1,61 @@
 import React, {useEffect, useState} from "react"
-import { settingsOutline, createOutline, trashBinOutline, shareOutline, share} from "ionicons/icons"
+import { settingsOutline, createOutline,barChartOutline, share, trash, close } from "ionicons/icons"
 import api from "../api";
-import { IonList, IonItem, IonLabel, IonContent, IonHeader, IonPopover, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton } from '@ionic/react';
+import {  IonInput, IonModal, IonContent, IonHeader,IonActionSheet, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton } from '@ionic/react';
+import {Question, Quiz, Answer, GameProps, colorMap} from "../utils/interface"
+
 
 
 interface RouteInfo { match: {params: {id: string} }}
-
-interface Quiz {
-    name: string,
-    show: boolean,
-    id: number,
-    questions: []
-}
-
-interface Question {
-    id: number,
-    answers: Answer[]
-    quiz: number
-    question_value: string
+interface Props { questions: Question[] }
+interface EditProps { 
+    quiz: Quiz;
+    open: boolean;
+    onClose: Function;
 }
 
 
-interface GameProps {
-    quiz: Quiz,
-    endQuiz: Function,
-    onAnswer: Function,
-}
-
-interface Answer {
-    id: number,
-    value: string,
-    correct: true,
-    question: number
-}
-interface Props {
-    questions: Question[]
-}
-
-const QuizSettings: React.FC = () => {
-    const [showPopover, setShowPopover] = useState(false);
-
+export const EditModal: React.FC<EditProps> = ({quiz, open, onClose }) => {
+    const [text, setText] = useState<string>(quiz.name)
+    const [color, setColor] = useState<string>(quiz.color)
+    
     return (
-        <>
-        <IonTabButton>
-            <IonIcon icon={settingsOutline} onClick={() => {setShowPopover(true)}} />
-        </IonTabButton>
+      <IonContent>
+        <IonModal isOpen={open} cssClass='my-custom-class'>
+            <div style={{width: "100%", height: "100%"}}>
+                <div style={{ color: "#888888", display: "flex", justifyContent: "space-between", margin: "0px 20px"}}>
+                    <h5 onClick={() => onClose(false)}>Save {quiz.name} </h5>
+                    <h5 onClick={() => onClose(false)}>Close</h5>
+                </div>
+                <div className={"content"} style={{margin: "1em"}} >
+                
+                <IonInput 
+                    value={text} 
+                    placeholder="Enter Input"
+                    style={{
+                        border: "1px solid #cccccc",
+                        fontSize: 20,
+                        borderRadius: "6px"
+                    }} 
+                    onIonChange={e => setText(e.detail.value!)}></IonInput>
 
-        <IonPopover
-            isOpen={showPopover}
-            cssClass='my-custom-class'
-            animated={true}
-            onDidDismiss={e => setShowPopover(false)}>
-            <IonList>
-                <IonItem>
-                    <IonIcon style={{marginRight: ".5em"}} icon={createOutline}/>
-                    <IonLabel>Edit quiz</IonLabel>
-                </IonItem>
-                <IonItem>
-                    <IonIcon style={{marginRight: ".5em"}} icon={shareOutline}/>
-                    <IonLabel>Share</IonLabel>
-                </IonItem>
-                <IonItem>
-                    <IonIcon style={{marginRight: ".5em"}} icon={trashBinOutline}/>
-                    <IonLabel>Delete this quiz</IonLabel>
-                </IonItem>
-            </IonList>
-        </IonPopover>
-        </>
-    )
-}
+                </div>
+          </div>
+        </IonModal>
+      </IonContent>
+    );
+  };
+
 
 const QuizDetail: React.FC<RouteInfo> = ({match}) => {
     const [quiz, setQuiz] = useState<Quiz>()
     const { id } = match.params;
     const [quizStarted, setQuizStarted] = useState<boolean>(false)
     const [answered, setAnswered] = useState<Answer[]>([])
+    const [hasEnded, setHasEnded] = useState<boolean>(false)
+    const [showActionSheet, setShowActionSheet] = useState<boolean>(false)
+    const [showModal, setShowModal] = useState(false);
+
 
     useEffect(() => {
         api.getQuiz(id).then(res => {
@@ -86,12 +67,13 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
         // send data to the backend to create a session and stats
         api.addStatistics(quiz?.id, answers).then(res => console.log(res))
         setQuizStarted(!quizStarted)
+        setHasEnded(true)
     }
 
     return (
         <IonPage>
         <IonHeader>
-          <IonToolbar>
+          <IonToolbar color={quiz ? colorMap[quiz.color] : ""}>
             <IonTitle>
                 <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center"}}>
                     <div>
@@ -103,7 +85,49 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                     </div>
                     ) : (
                         <div>
-                            <QuizSettings />
+                            <IonTabButton>
+                                <IonIcon icon={settingsOutline} onClick={() => {setShowActionSheet(true)}} />
+                            </IonTabButton>
+                            <IonActionSheet
+                                isOpen={showActionSheet}
+                                onDidDismiss={() => setShowActionSheet(false)}
+                                cssClass='my-custom-class'
+                                buttons={[{
+                                        text: 'Delete',
+                                        role: 'destructive',
+                                        icon: trash,
+                                        handler: () => {
+                                            console.log('Delete clicked');
+                                        }
+                                    }, {
+                                        text: 'Share',
+                                        icon: share,
+                                        handler: () => {
+                                            console.log('Share clicked');
+                                        }
+                                    }, {
+                                        text: 'Statistics',
+                                        icon: barChartOutline,
+                                        handler: () => {
+                                            setShowModal(true)
+                                        }
+                                    }, {
+                                        text: 'Edit',
+                                        icon: createOutline,
+                                        handler: () => {
+                                            setShowModal(true)
+                                        }
+                                    }, {
+                                        text: 'Cancel',
+                                        icon: close,
+                                        role: 'cancel',
+                                        handler: () => {
+                                            
+                                        }
+                                    }
+                                ]}
+                            >
+                            </IonActionSheet>
                         </div>
                     )}
                     
@@ -112,18 +136,31 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
           </IonToolbar>
         </IonHeader>
         <IonContent fullscreen>
-            {quiz ? (
+            {hasEnded ? (
                 <>
+                    quiz ended
+                </>
+            ) : (
+                <>
+                {quiz ? (
+                <>
+                
                     {!quizStarted ? (
                         <>
-                            <IonHeader collapse="condense">
-                                <IonToolbar>
-                                <IonTitle size="large">{id}</IonTitle>
-                                </IonToolbar>
-                            </IonHeader>
+                            {quiz.questions.length > 0 ? (
+                                <>
+                                    <IonHeader collapse="condense">
+                                        <IonToolbar>
+                                        <IonTitle size="large">{id}</IonTitle>
+                                        </IonToolbar>
+                                    </IonHeader>
 
-                            <IonButton expand="block" fill="solid" onClick={() => {setQuizStarted(!quizStarted)}} >Start quiz</IonButton>
+                                    <IonButton expand="block" fill="solid" onClick={() => {setQuizStarted(!quizStarted)}} >Start quiz</IonButton>
+                                </>    
+                            ) : <></>}
                             <QuestionsPreview  questions={quiz?.questions || []}/> 
+                            <EditModal quiz={quiz} onClose={() => setShowModal(false)} open={showModal} />
+
                         </>
                     ) : (
                         <Game 
@@ -136,6 +173,9 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                     )}
                 </>
             ) : <></>}
+                </>
+            )}
+            
           
         </IonContent>
       </IonPage>
@@ -165,46 +205,44 @@ function shuffle(array: any[]) {
 
 const Game: React.FC<GameProps> = ({ quiz, endQuiz, onAnswer }) => {
     const [answered, setAnswered] = useState<Answer[]>([])
-    const [shuffeledQuestions, setShuffeledQuestions] = useState<Question[]>(shuffle(quiz.questions))
-
-    const getCorrect = () => answered.filter(ans => ans.correct)
-    const getFalse = () => answered.filter(ans => !ans.correct)
+    const shuffeledQuestions: Question[] = shuffle(quiz.questions)
 
     const getNextQuestion = () => {
-        return shuffeledQuestions[answered.length]
+        if (shuffeledQuestions[answered.length]) {
+            return shuffeledQuestions[answered.length]
+        } 
     }
 
     const answerQuestion = (ans: Answer) => {
         onAnswer(ans)
-        setAnswered([...answered, ans])
+        setAnswered([...answered, ans])      
     }
 
     const renderQueston = () => {
         const question = getNextQuestion()
-        if (question) {
+        if (question !== undefined) {
             return <GameQuestion question={question} onAnswer={answerQuestion} />
         }
-        else {
-            endQuiz(answered)
-        }
-
+        endQuiz(answered)
     }
 
     return (
         <div>
             {renderQueston()}
-            <GameStats questions={quiz.questions} correct={getCorrect()} incorrect={getFalse()} />
+            <GameStats questions={quiz.questions} answers={answered} />
         </div>
     )
 }
 
 interface StatProps {
-    correct: Answer[]
-    incorrect: Answer[]
+    answers: Answer[]
     questions: Question[]
 }
 
-const GameStats: React.FC<StatProps> = ({correct, incorrect, questions}) => {
+const GameStats: React.FC<StatProps> = ({answers}) => {
+
+    const correct =  answers.filter(ans => ans.correct).length
+    const incorrect = answers.filter(ans => !ans.correct).length
    
     return (
         <div style={{width: "100%", display: "flex", justifyContent: "center", position: "absolute", bottom: "4em"}}>
@@ -217,8 +255,8 @@ const GameStats: React.FC<StatProps> = ({correct, incorrect, questions}) => {
                 </thead>
                 <tbody>
                     <tr>
-                        <td style={{padding: ".5em", textAlign: "center", color: "#4caf50"}}>{correct.length}</td>
-                        <td style={{padding: ".5em", textAlign: "center", color: "#f44336"}}>{incorrect.length}</td>
+                        <td style={{padding: ".5em", textAlign: "center", color: "#4caf50"}}>{correct}</td>
+                        <td style={{padding: ".5em", textAlign: "center", color: "#f44336"}}>{incorrect}</td>
                     </tr>
                 </tbody>
             </table>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import {QuizList} from '../components/QuizList';
-import './Tab1.css';
 
 const Tab1: React.FC = () => {
   return (

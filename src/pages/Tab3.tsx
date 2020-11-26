@@ -2,30 +2,75 @@ import React , {useState} from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { IonInput, IonItem, IonLabel, IonButton } from '@ionic/react';
 import api from '../api';
-import { IonAlert, IonCard, IonCardHeader, IonCardSubtitle, IonCardContent} from '@ionic/react';
+import { IonAlert, IonCard, IonCardHeader, IonCardSubtitle, IonCardContent, IonPopover} from '@ionic/react';
 import CreateAnswersList from '../components/CreateAnswersList';
-interface Quiz {
-  id: number,
-  name: string,
-  show: boolean
+import { CirclePicker } from 'react-color';
+import {Quiz, Answer, colorMap} from "../utils/interface"
+
+
+interface ColorProps {
+  onChange: Function,
+  style?: Object
+}
+
+
+const ColorPicker: React.FC<ColorProps> = ({onChange, style}) => {
+  const [showPopover, setShowPopover] = useState(false);
+  const [color, setColor] = useState<string>("#3880ff")
+  
+  return (
+    <div style={style}>
+      <IonPopover
+        isOpen={showPopover}
+        cssClass={"popover"}
+        onDidDismiss={e => setShowPopover(false)}
+      >
+        <div style={{paddingBottom: "20px",width: "100%", height: "100%", display: "flex",flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
+          <h3>Choose a color</h3>
+          <div>
+          <CirclePicker 
+            width="220px"
+            onChangeComplete={e => {setColor(e.hex); setShowPopover(false); onChange(e.hex)}}
+            colors={[...Object.keys(colorMap)]}  />
+          </div>
+        </div>
+      </IonPopover>
+      <div
+        style={{
+          minWidth: "30px",
+          minHeight: "30px",
+          borderRadius: "50%",
+          backgroundColor: color
+        }} 
+        onClick={() => setShowPopover(true)}>
+
+      </div>
+    </div>
+  );
+
 }
 
 const Tab3: React.FC = () => {
   const [disabled, setDisabled] = useState<boolean>(false)
   const [name, setName] = useState("")
   const [createdQuiz, setCreatedQuiz] = useState<Quiz>()
+  const [color, setColor] = useState<string>("#3880ff")
 
   const submit = () => {
-    api.createQuiz(name).then(res => {
+    api.createQuiz(name, color).then(res => {
       setCreatedQuiz(res.data)
       setDisabled(true)
     })
   }
 
+  const getColor = () => {
+    return colorMap[color] || "primary"
+  }
+
   return (
     <IonPage>
       <IonHeader>
-        <IonToolbar>
+        <IonToolbar color={getColor()}>
           <IonTitle>
             <div style={{display: "flex", flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
               <div>Create a new quiz</div>
@@ -51,9 +96,14 @@ const Tab3: React.FC = () => {
             <IonLabel position="stacked">Quiz name</IonLabel>
             <IonInput 
               disabled={disabled} 
-              value={name} 
+              value={name}
               placeholder="Quiz Name" 
               onIonInput={(e) => {setName((e.target as HTMLTextAreaElement).value)}} />
+              <ColorPicker style={{
+                position: "absolute",
+                right: "0",
+                top: "20px"
+              }} onChange={setColor}/>
           </IonItem>
           {name.length > 0 && !disabled ? (
 
@@ -76,19 +126,6 @@ const Tab3: React.FC = () => {
 };
 
 interface Props { quiz: Quiz }
-interface Quiz {
-    name: string,
-    show: boolean,
-    id: number,
-    questions: []
-}
-
-interface Answer {
-    id: number,
-    value: string,
-    correct: boolean,
-    question?: number
-}
 
 const QuizQuestionForm: React.FC<Props> = ({quiz}) => {
   const [counter, setCounter] = useState<number>(0)

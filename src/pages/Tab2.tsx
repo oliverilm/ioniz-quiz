@@ -1,9 +1,8 @@
-import React, {useState, useEffect} from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
+import React, {useState} from 'react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, useIonViewDidLeave, useIonViewWillEnter } from '@ionic/react';
 import { Answer } from '../utils/interface';
 import api from '../api';
 import Chart from "react-google-charts";
-
 
 interface Stats {
   id: number
@@ -17,17 +16,17 @@ interface Stats {
 const Tab2: React.FC = () => {
 
   const [stats, setStats] = useState<Stats[]>([]);
-  useEffect(() => {
-    let mounted = true
-    if (mounted) {
+  
+  useIonViewWillEnter(() => {   
       api.getStats().then(res => {
         setStats(res.data)
-      })
-    }
-    return () => {
-      mounted = false
-    }
-  }, [setStats])
+      });
+  })
+  
+  useIonViewDidLeave(() => {
+    setStats([])
+  })
+  
 
   const getStatsByQuizId = () => {
     const result: {[key: number]: Stats[]} = {}
@@ -51,7 +50,7 @@ const Tab2: React.FC = () => {
       return (
         <Chart 
           key={quizData[0].quiz}
-          chartType="BarChart"
+          chartType="ColumnChart"
           loader={<div>Loading Chart</div>}
           data={[
             ['Time', 'Correct', 'Incorrect', { role: 'style' }],

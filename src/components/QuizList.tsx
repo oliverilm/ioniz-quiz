@@ -8,6 +8,7 @@ import api from '../api/index';
 interface Quiz {
     name: string
     id: number
+    color: string
 }
 
 type Props = {
@@ -32,26 +33,13 @@ export const QuizList: React.FC = () => {
         })
     }, [setQuizes])
 
-    const getRandomColor = () => {
-        const colors = [
-            {bg: "#f44336", color: "#fff"},
-            {bg: "#e91e63", color: "#fff"},
-            {bg: "#9c27b0", color: "#fff"},
-            {bg: "#673ab7", color: "#fff"},
-            {bg: "#3f51b5", color: "#fff"},
-            {bg: "#2196f3", color: "#fff"},
-            {bg: "#009688", color: "#fff"},
-            {bg: "#ff5722", color: "#fff"},
-        ]
-        return colors[Math.floor(Math.random() * colors.length)]
-    }
+    
 
     const renderQuizes = () => {
         return quizes.map(quiz => {
-            const {bg, color} = getRandomColor()
             return (
             <IonItem key={quiz.id} href={`/tab1/${quiz.id}`} className="ion-activated" >
-                <Avatar bg={bg} color={color} value={quiz.name}/>
+                <Avatar bg={quiz.color} color={"#fff"} value={quiz.name}/>
                 <IonLabel>{quiz.name}</IonLabel>
             </IonItem>
             )

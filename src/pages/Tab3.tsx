@@ -2,53 +2,10 @@ import React , {useState} from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
 import { IonInput, IonItem, IonLabel, IonButton } from '@ionic/react';
 import api from '../api';
-import { IonAlert, IonCard, IonCardHeader, IonCardSubtitle, IonCardContent, IonPopover} from '@ionic/react';
+import { IonAlert, IonCard, IonCardHeader, IonCardSubtitle, IonCardContent } from '@ionic/react';
 import CreateAnswersList from '../components/CreateAnswersList';
-import { CirclePicker } from 'react-color';
 import {Quiz, Answer, colorMap} from "../utils/interface"
-
-
-interface ColorProps {
-  onChange: Function,
-  style?: Object
-}
-
-
-const ColorPicker: React.FC<ColorProps> = ({onChange, style}) => {
-  const [showPopover, setShowPopover] = useState(false);
-  const [color, setColor] = useState<string>("#3880ff")
-  
-  return (
-    <div style={style}>
-      <IonPopover
-        isOpen={showPopover}
-        cssClass={"popover"}
-        onDidDismiss={e => setShowPopover(false)}
-      >
-        <div style={{paddingBottom: "20px",width: "100%", height: "100%", display: "flex",flexDirection: "column", alignItems: "center", justifyContent: "center"}}>
-          <h3>Choose a color</h3>
-          <div>
-          <CirclePicker 
-            width="220px"
-            onChangeComplete={e => {setColor(e.hex); setShowPopover(false); onChange(e.hex)}}
-            colors={[...Object.keys(colorMap)]}  />
-          </div>
-        </div>
-      </IonPopover>
-      <div
-        style={{
-          minWidth: "30px",
-          minHeight: "30px",
-          borderRadius: "50%",
-          backgroundColor: color
-        }} 
-        onClick={() => setShowPopover(true)}>
-
-      </div>
-    </div>
-  );
-
-}
+import ColorPicker from "../components/ColorPicker"
 
 const Tab3: React.FC = () => {
   const [disabled, setDisabled] = useState<boolean>(false)

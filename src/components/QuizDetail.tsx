@@ -1,8 +1,12 @@
 import React, {useEffect, useState} from "react"
 import { settingsOutline, createOutline,barChartOutline, share, trash, close } from "ionicons/icons"
 import api from "../api";
-import {  IonInput, IonModal, IonContent, IonHeader,IonActionSheet, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton } from '@ionic/react';
+import {  IonInput, IonItem, IonContent, IonHeader,IonActionSheet, IonPage, IonTitle, IonToolbar,IonTabButton, IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonIcon, IonButton, IonLabel, IonTextarea, IonCheckbox } from '@ionic/react';
 import {Question, Quiz, Answer, GameProps, colorMap} from "../utils/interface"
+import Popup from "./Popup"
+import ColorPicker from "./ColorPicker";
+import {closeOutline} from "ionicons/icons"
+
 
 
 
@@ -18,31 +22,101 @@ interface EditProps {
 export const EditModal: React.FC<EditProps> = ({quiz, open, onClose }) => {
     const [text, setText] = useState<string>(quiz.name)
     const [color, setColor] = useState<string>(quiz.color)
+    const [question, setQuestion] = useState<Question>()
+    // const [editedQuestions, setEditedQuestions] = useState<Question[]>()
     
-    return (
-      <IonContent>
-        <IonModal isOpen={open} cssClass='my-custom-class'>
-            <div style={{width: "100%", height: "100%"}}>
-                <div style={{ color: "#888888", display: "flex", justifyContent: "space-between", margin: "0px 20px"}}>
-                    <h5 onClick={() => onClose(false)}>Save {quiz.name} </h5>
-                    <h5 onClick={() => onClose(false)}>Close</h5>
-                </div>
-                <div className={"content"} style={{margin: "1em"}} >
-                
-                <IonInput 
-                    value={text} 
-                    placeholder="Enter Input"
-                    style={{
-                        border: "1px solid #cccccc",
-                        fontSize: 20,
-                        borderRadius: "6px"
-                    }} 
-                    onIonChange={e => setText(e.detail.value!)}></IonInput>
+    const save = () => {
+        console.log("save data")
+    }
 
+    const renderQuestionSquares = () => {
+        return quiz.questions.map((q, i) => {
+            return (
+                <div 
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        minWidth: "14vw",
+                        minHeight: "14vw",
+                        border: question === q ? `1px solid ${color}` : "1px solid #ccc",
+                        backgroundColor: question === q ? `${color}99` : "#fff",
+                        borderRadius: "4px",
+                        margin: "5px"
+                    }}
+                    onClick={() => {
+                        setQuestion(q)
+                    }}>
+                    { i + 1 }
                 </div>
-          </div>
-        </IonModal>
-      </IonContent>
+            )
+        })
+    }
+
+    const renderQuestionAnswers = () => {
+        return question?.answers.map(ans => {
+            return (
+                <IonItem style={{ display: "flex", flexDirection: "row"}}>
+                    <IonInput value={ans.value} />
+                    <IonCheckbox checked={ans.correct} />
+                    <IonIcon icon={closeOutline}/>
+                </IonItem>
+            )
+        })
+    }
+
+    const Label: React.FC<{name: string}> = ({name}) => <IonLabel style={{color: "#ccc"}} position="fixed">{name}</IonLabel>
+
+    return (
+        <>
+        {open ? (
+        <Popup isOpen={open} onClose={onClose} saveText={`Save ${quiz.name}`} onSave={save}>
+            
+            <IonItem>
+                <Label name={"Quiz Name"}/>
+                <IonInput value={text} onIonChange={e => setText(e.detail.value || "")}></IonInput>
+            </IonItem>
+
+            <IonItem>
+                <Label name={"Color"}/>
+                <ColorPicker 
+                    currentColor={color}
+                    style={{
+                        position: "absolute",
+                        right: "0",
+                        top: "10px"
+                    }} 
+                    onChange={setColor}/>
+            </IonItem>
+                
+            <div style={{
+                display: "flex",
+                flexDirection: "row",
+                // flexWrap: "wrap",
+                overflow: "scroll",
+                marginTop: "2em"
+            }}>
+                {renderQuestionSquares()}
+            </div>
+
+            {question ? (
+                <IonCard>
+                    <IonCardHeader>
+                        <IonCardTitle style={{fontSize: 16}} contentEditable={true} spellCheck={false}>
+                            <Label name={"Question"} />
+                            <IonTextarea style={{ width: "auto"}} value={question?.question_value}></IonTextarea>
+                        </IonCardTitle>
+                    </IonCardHeader>
+                    <IonCardContent>
+                        {renderQuestionAnswers()}
+                    </IonCardContent>
+                </IonCard>
+            ) : (<></>)}
+
+
+        </Popup>
+        ): <></>}
+        </>
     );
   };
 
@@ -144,7 +218,9 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                 <>
                 {quiz ? (
                 <>
-                
+                    <EditModal quiz={quiz} onClose={() => setShowModal(false)} open={showModal} />
+                    
+
                     {!quizStarted ? (
                         <>
                             {quiz.questions.length > 0 ? (
@@ -159,8 +235,6 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                                 </>    
                             ) : <></>}
                             <QuestionsPreview  questions={quiz?.questions || []}/> 
-                            <EditModal quiz={quiz} onClose={() => setShowModal(false)} open={showModal} />
-
                         </>
                     ) : (
                         <Game 
@@ -170,9 +244,9 @@ const QuizDetail: React.FC<RouteInfo> = ({match}) => {
                                 setAnswered(a => [...a, answer])
                             }}/>
                             
-                    )}
-                </>
-            ) : <></>}
+                        )}
+                    </>
+                ) : <></>}
                 </>
             )}
             
